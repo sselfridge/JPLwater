@@ -93,7 +93,7 @@ function ioStatus() {
 
   motion = motion === MOVEMENT ? "Movement" : "NO Movement";
   door = door === OPEN ? "open" : "closed";
-  green = green === ON ? "ON" : "  ";
+  // green = green === ON ? "ON" : "  ";
 
   return `motion: ${motion} door: ${door}------- -- green:${green}`;
 }
@@ -146,28 +146,28 @@ function turnOffLED(color, timeout = 0) {
 
 function blinkLED(color, time = 5000) {
   // if (CURRENT_ENV === "dev") console.log(`Blink ${color} LED for ${time}`);
-  let led;
-  switch (color) {
-    case "red":
-      led = piController.objIO.red;
-      break;
-    case "yellow":
-      led = piController.objIO.yellow;
-      break;
-    case "green":
-      led = piController.objIO.green;
-      break;
-    default:
-      console.log("INVALID COLOR FOUND");
-      break;
-  }
-  let toggled = led.readSync() ^ 1;
-  led.writeSync(toggled);
-  if (time > 500) {
-    setTimeout(blinkLED, 500, color, time - 500);
-  } else {
-    led.writeSync(OFF);
-  }
+  // let led;
+  // switch (color) {
+  //   case "red":
+  //     led = piController.objIO.red;
+  //     break;
+  //   case "yellow":
+  //     led = piController.objIO.yellow;
+  //     break;
+  //   case "green":
+  //     led = piController.objIO.green;
+  //     break;
+  //   default:
+  //     console.log("INVALID COLOR FOUND");
+  //     break;
+  // }
+  // let toggled = led.readSync() ^ 1;
+  // led.writeSync(toggled);
+  // if (time > 500) {
+  //   setTimeout(blinkLED, 500, color, time - 500);
+  // } else {
+  //   led.writeSync(OFF);
+  // }
 }
 
 module.exports = piController;
