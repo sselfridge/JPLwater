@@ -23,11 +23,11 @@ const piStartTime = m();
 const objIO = pi.setupIO();
 const CC = new CheckController(objIO);
 
-if (CURRENT_ENV === "dev") {
-  const logInterval = setInterval(() => {
-    console.log(pi.ioStatus());
-  }, 1000);
-}
+// if (CURRENT_ENV === "dev") {
+const logInterval = setInterval(() => {
+  console.log(pi.ioStatus());
+}, 1000);
+// }
 
 //check interval for changing door / LED values
 intervalCount = 0;
