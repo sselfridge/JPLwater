@@ -2,16 +2,16 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const m = require("moment");
-const config = require("../config/keys");
-const mongooseStart = require("./bin/mongoose");
+// const config = require("../config/keys");
+// const mongooseStart = require("./bin/mongoose");
 const pi = require("./controllers/piController");
 const CheckController = require("./controllers/event");
 
-mongooseStart();
+// mongooseStart();
 
-const twilio = require("./controllers/twilio");
+// const twilio = require("./controllers/twilio");
 const numbers = ["+18057651413"];
-const client = twilio.makeClient(numbers);
+// const client = twilio.makeClient(numbers);
 
 const app = express();
 
@@ -87,46 +87,7 @@ const eventCheck = (CC) => {
 //   res.json('Allo!!!');
 // });
 
-app.post("/sms", (req, res) => {
-  const message = req.body.message;
-  console.log(`message:${message}`);
-  if ("userId" in req.cookies) {
-    const phone = "phone" in req.body ? req.body.phone : "";
-    const userId = req.cookies.userId;
-    Session.findOne(
-      { _id: userId },
-
-      (err, userDataArr) => {
-        if (err) {
-          res.send("err");
-        } else {
-          const user = userDataArr;
-          if (user.phone) {
-            twilio.messages.create(
-              {
-                to: user.phone,
-                from: config.twilio.number,
-                body: `Reservation:\n\n${message}`,
-              },
-              (err, message) => {
-                if (err) {
-                  console.log("Twilio Error");
-                  console.log(err);
-                  res.status(444).json("SMS error");
-                }
-                console.log(message.sid);
-              }
-            );
-            res.json("SENT!");
-            return;
-          } else {
-            res.status(445).send("No Phone for user");
-          }
-        }
-      }
-    );
-  }
-});
+app.post("/sms", (req, res) => {});
 // get current door status
 app.get("/door", (req, res) => {
   // console.log(`/door`);
@@ -274,7 +235,7 @@ app.use(({ errCode, error }, req, res, next) => {
 const makeHtml = (template) => {
   const data = CC.getData();
   data.intervalCount = intervalCount;
-  data.startTime = piStartTime.format("MMMM Do YYYY, h:mm:ss a")
+  data.startTime = piStartTime.format("MMMM Do YYYY, h:mm:ss a");
   data.startTimeFromNow = m(piStartTime).fromNow();
 
   for (const key in data) {
@@ -284,7 +245,7 @@ const makeHtml = (template) => {
       template = template.replace(regex, element);
     }
   }
-  return template
+  return template;
 };
 
 const port = CURRENT_ENV === "production" ? 5000 : 3001;
