@@ -56,6 +56,7 @@ if (CURRENT_ENV === 'production') {
     piController.objIO.motion = new Gpio(4, 'in');
     piController.objIO.door = new Gpio(23, 'in');
     piController.objIO.green =  new Gpio(17, 'out');
+    piController.objIO.green.writeSync(1);
 
   } else {
     piController.objIO.motion = new MockGpio(0);
