@@ -1,36 +1,20 @@
 const MockGpio = require("../MockGpio");
 
-const OPEN = 0;
-const CLOSED = 1;
-const ON = 1;
-const OFF = 0;
-const MOVEMENT = 1;
-const NO_MOVEMENT = 0;
+const OFF = 1;
+const ON = 0;
+
+const DRY = 1;
+const WET = 0;
 const piController = {
   // objIO exported to main server
 
   objIO: {
-    red: null,
-    yellow: null,
-    green: null,
-    motion: null,
-    doorTime: null, // time door has been in current state
-    doorState: null, // current door state
-
-    //constants for the door values
-    OPEN: OPEN,
-    CLOSED: CLOSED,
-
-    MOVEMENT: MOVEMENT,
-    NO_MOVEMENT: NO_MOVEMENT,
+    pump: OFF,
+    lastWater: null, // time door has been in current state
 
     //constants for LED values
     ON: ON,
     OFF: OFF,
-
-    //time constants in seconds
-    DOOR_BUFFER: 30, // door must be in new state for this long before changing
-    MOTION_TIMEOUT: 1200, // N in minutes x 60 x 1000
   },
 };
 
@@ -38,9 +22,9 @@ const piController = {
 piController.setupIO = setupIO;
 piController.heartbeat = heartbeat;
 piController.ioStatus = ioStatus;
-piController.blinkLED = blinkLED;
-piController.turnOffLED = turnOffLED;
-piController.turnOnLED = turnOnLED;
+
+piController.turnOnPump = turnOnPump;
+piController.turnOffPump = turnOffPump;
 
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
 
@@ -53,15 +37,15 @@ if (CURRENT_ENV === 'production') {
   console.log('ENV Production');
     var onoff = require('onoff');
     const Gpio = onoff.Gpio;
-    piController.objIO.motion = new Gpio(4, 'in');
-    piController.objIO.door = new Gpio(23, 'in');
-    piController.objIO.green =  new Gpio(17, 'out');
-    piController.objIO.green.writeSync(1);
+    // piController.objIO.motion = new Gpio(4, 'in');
+    // piController.objIO.door = new Gpio(23, 'in');
+    piController.objIO.pump =  new Gpio(17, 'out');
+    piController.objIO.pump.writeSync(piController.objIO.OFF);
 
   } else {
-    piController.objIO.motion = new MockGpio(0);
-    piController.objIO.door = new MockGpio(0);
-    piController.objIO.green = new MockGpio(0);
+    // piController.objIO.motion = new MockGpio(0);
+    // piController.objIO.door = new MockGpio(0);
+    piController.objIO.pump = new MockGpio(OFF);
 
   }
   piController.objIO.doorTime = 0; //initialize to 0
@@ -71,104 +55,28 @@ if (CURRENT_ENV === 'production') {
 let prevState;
 
 function heartbeat() {
-  const motionState = piController.objIO.motion.readSync();
-  const doorState = piController.objIO.door.readSync();
+  const pumpState = piController.objIO.pump.readSync();
 
-  // if (doorState) {
-  //   turnOnLED("green");
-  // } else {
-  //   turnOffLED("green");
-  // }
-
-  const status = {
-    door: doorState,
-    motion: motionState,
-  };
-  return status;
+  return pumpState;
 }
 
 function ioStatus() {
-  let motion = piController.objIO.motion.readSync();
-  let door = piController.objIO.door.readSync();
-  let green = piController.objIO.green.readSync();
+  let pump = piController.objIO.pump.readSync();
 
-  motion = motion === MOVEMENT ? "Movement" : "NO Movement";
-  door = door === OPEN ? "open" : "closed";
+  pump = pump === ON ? "ON" : "OFF";
   // green = green === ON ? "ON" : "  ";
 
-  return `motion: ${motion} door: ${door}------- -- green:${green}`;
+  return `Pump Status: ${pump}`;
 }
 
-function turnOnLED(color, timeout = 0) {
-  let led;
-  switch (color) {
-    case "red":
-      led = piController.objIO.red;
-      break;
-    case "yellow":
-      led = piController.objIO.yellow;
-      break;
-    case "green":
-      led = piController.objIO.green;
-      break;
-    default:
-      console.log("INVALID COLOR FOUND");
-      break;
-  }
-
-  led.writeSync(ON);
-  if (timeout) {
-    setTimeout(turnOffLED, timeout, color);
-  }
+function turnOffPump() {
+  const pump = piController.objIO.pump;
+  pump.writeSync(OFF);
 }
 
-function turnOffLED(color, timeout = 0) {
-  let led;
-  switch (color) {
-    case "red":
-      led = piController.objIO.red;
-      break;
-    case "yellow":
-      led = piController.objIO.yellow;
-      break;
-    case "green":
-      led = piController.objIO.green;
-      break;
-    default:
-      console.log("INVALID COLOR FOUND");
-      break;
-  }
-
-  led.writeSync(OFF);
-  if (timeout !== 0) {
-    setTimeout(turnOnLED, timeout, color);
-  }
-}
-
-function blinkLED(color, time = 5000) {
-  // if (CURRENT_ENV === "dev") console.log(`Blink ${color} LED for ${time}`);
-  // let led;
-  // switch (color) {
-  //   case "red":
-  //     led = piController.objIO.red;
-  //     break;
-  //   case "yellow":
-  //     led = piController.objIO.yellow;
-  //     break;
-  //   case "green":
-  //     led = piController.objIO.green;
-  //     break;
-  //   default:
-  //     console.log("INVALID COLOR FOUND");
-  //     break;
-  // }
-  // let toggled = led.readSync() ^ 1;
-  // led.writeSync(toggled);
-  // if (time > 500) {
-  //   setTimeout(blinkLED, 500, color, time - 500);
-  // } else {
-  //   led.writeSync(OFF);
-  // }
+function turnOnPump() {
+  const pump = piController.objIO.pump;
+  pump.writeSync(ON);
 }
 
 module.exports = piController;

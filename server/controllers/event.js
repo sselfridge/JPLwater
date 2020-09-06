@@ -21,14 +21,6 @@ class CheckController {
     this.MOTION_TIMEOUT = objIO.MOTION_TIMEOUT;
   }
 
-  //only change status after a buffer time has past.
-  //set in piController.js
-  doorBuffer() {
-    const lastEvent = Math.max(this.doorCloseTime, this.doorOpenTime);
-    const secSince = m(m() - lastEvent).seconds();
-    return secSince > this.DOOR_BUFFER ? true : false;
-  }
-
   checkDoor(doorStatus) {
     const prevDoorStatus = this.doorStatus;
 
@@ -88,7 +80,7 @@ class CheckController {
       motionDuration,
       motionTime: m(motionStopTime).format(formatStr2),
       doorTime: m(mostRecentDoorEvent).format(formatStr2),
-      intervalCount
+      intervalCount,
     };
   }
 }

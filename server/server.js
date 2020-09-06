@@ -9,14 +9,10 @@ const CheckController = require("./controllers/event");
 
 // mongooseStart();
 
-// const twilio = require("./controllers/twilio");
-const numbers = ["+18057651413"];
-// const client = twilio.makeClient(numbers);
-
 const app = express();
 
-// app.use(express.static(path.join(__dirname, "../build")));
-// app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(express.static(path.join(__dirname, "../build")));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
 const piStartTime = m();
@@ -40,12 +36,6 @@ const interval = setInterval(() => {
 
   CC.checkDoor(doorStatus);
   CC.checkMotion(motionStatus);
-
-  if (doorStatus === CC.OPEN) eventCheck(CC);
-
-  //blink light every so often.
-  if (intervalCount % 5 === 0) pi.blinkLED("green", 2000);
-  intervalCount++;
 }, 2000);
 
 const eventCheck = (CC) => {
@@ -112,14 +102,6 @@ app.post("/door/:status", (req, res) => {
 });
 
 let moveTimeout;
-
-//trigger motion for 5 seconds
-app.post("/move", (req, res) => {
-  clearTimeout(moveTimeout);
-  objIO.motion.writeSync(objIO.MOVEMENT);
-  moveTimeout = setTimeout(() => objIO.motion.writeSync(objIO.NO_MOVEMENT), 5000);
-  res.json("done");
-});
 
 app.get("/led/:color", (req, res) => {
   console.log(`/led/:color`);
