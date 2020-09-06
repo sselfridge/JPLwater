@@ -5,7 +5,7 @@ const m = require("moment");
 // const config = require("../config/keys");
 // const mongooseStart = require("./bin/mongoose");
 const pi = require("./controllers/piController");
-const CheckController = require("./controllers/event");
+const PumpController = require("./controllers/pumpController");
 
 // mongooseStart();
 
@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
 const piStartTime = m();
 const objIO = pi.setupIO();
-const CC = new CheckController(objIO);
+const Pump = new PumpController(objIO);
 
 // if (CURRENT_ENV === "dev") {
 const logInterval = setInterval(() => {
@@ -31,11 +31,6 @@ const interval = setInterval(() => {
   const now = new Date();
 
   const status = pi.heartbeat();
-  const motionStatus = status.motion;
-  const doorStatus = status.door;
-
-  CC.checkDoor(doorStatus);
-  CC.checkMotion(motionStatus);
 }, 2000);
 
 const eventCheck = (CC) => {
