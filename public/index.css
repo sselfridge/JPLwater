@@ -1,0 +1,46 @@
+@media only screen and (max-width: 600px) {
+    body {
+        font-size: 5vw;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+    body {
+        font-size: 2vw;
+    }
+}
+
+main {
+    margin: 15px 50px;
+}
+
+p {
+    font-size: 3vw;
+    margin: 0;
+}
+
+.status {
+    font-weight: 800;
+}
+
+section {
+    margin: 50px;
+}
+
+a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+    text-decoration: none;
+    color: black;
+    background-color: gray;
+    padding: 5;
+    border-radius: 5;
+    cursor: pointer;
+}
+
+footer {
+    max-height: 150px;
+    position: absolute;
+    bottom: 0;
+}

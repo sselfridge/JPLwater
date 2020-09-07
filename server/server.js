@@ -20,12 +20,12 @@ const objIO = pi.setupIO();
 const Pump = new PumpController(objIO);
 let intervalCount = 0;
 
-// if (CURRENT_ENV === "dev") {
-const logInterval = setInterval(() => {
-  console.log(Pump.getStatus());
-  intervalCount++;
-}, 1000);
-// }
+if (CURRENT_ENV === "dev") {
+  const logInterval = setInterval(() => {
+    console.log(Pump.getStatus());
+    intervalCount++;
+  }, 1000);
+}
 
 const eventCheck = (CC) => {
   const { doorOpenTime, motionStopTime, motionStartTime } = CC;
