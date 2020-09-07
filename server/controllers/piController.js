@@ -48,7 +48,6 @@ if (CURRENT_ENV === 'production') {
     piController.objIO.pump = new MockGpio(OFF);
 
   }
-  piController.objIO.doorTime = 0; //initialize to 0
   return piController.objIO;
 }
 
@@ -56,7 +55,6 @@ let prevState;
 
 function heartbeat() {
   const pumpState = piController.objIO.pump.readSync();
-
   return pumpState;
 }
 
@@ -64,7 +62,6 @@ function ioStatus() {
   let pump = piController.objIO.pump.readSync();
 
   pump = pump === ON ? "ON" : "OFF";
-  // green = green === ON ? "ON" : "  ";
 
   return `Pump Status: ${pump}`;
 }

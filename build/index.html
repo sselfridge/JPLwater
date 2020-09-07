@@ -24,6 +24,17 @@
     section {
       margin: 50px;
     }
+    a.button {
+      -webkit-appearance: button;
+      -moz-appearance: button;
+      appearance: button;
+      text-decoration: none;
+      color: black;
+      background-color: gray;
+      padding: 5;
+      border-radius: 5;
+      cursor: pointer;
+    }
     footer {
       max-height: 150px;
       position: absolute;
@@ -31,18 +42,22 @@
     }
   </style>
   <body>
-    <header>{currentTime}</header>
+    <header id="currentTime">{currentTime}</header>
     <main>
-      Door status:
-      <div class="status">{doorStatus}</div>
+      Pump status:
+      <div id="pumpStatus" class="status">{pumpStatus}</div>
     </main>
     <section>
-      <p><span>Door Since: </span><span class="status">{doorDuration}</span></p>
-      <p><span>Last Motion:</span><span class="status">{motionDuration}</span></p>
+      <p>
+        <span>Last Pump Activation: </span
+        ><span id="lastPumpTime" class="status">{lastPumpTime}</span>
+      </p>
+      <a class="button" href="/pump/on">Start Pump</a>
     </section>
     <section>
-      <p>Motion: <span class="status">{motionTime}</span></p>
-      <p>Door: <span class="status">{doorTime}</span></p>
+      <p>Current Pump Duration: <span class="status">{pumpDuration} seconds</span></p>
+      <input id="timeInput" type="number" value="10" />
+      <a class="button" onclick="setPumpDuration()">Set Pump Duration</a>
     </section>
     <footer>
       <div>{intervalCount} iterations</div>
@@ -50,4 +65,8 @@
       <div>{startTimeFromNow}</div>
     </footer>
   </body>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js"></script>
+
+  <script src="index.js"></script>
 </html>

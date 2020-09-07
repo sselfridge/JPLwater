@@ -4,51 +4,65 @@ class PumpController {
   constructor(objIO) {
     console.log("Initialize State");
 
-    this.lastPumpTime = null;
-
+    this.lastPumpTime = m();
+    this.pump = objIO.pump;
+    this.pumpDuration = 10;
     this.ON = objIO.ON;
     this.OFF = objIO.OFF;
+
+    this.turnOff = this.turnOff.bind(this);
+    this.turnOn = this.turnOn.bind(this);
+    this.getStatus = this.getStatus.bind(this);
   }
 
-  checkPump(doorStatus) {
-    const prevDoorStatus = this.doorStatus;
+  checkPump() {
+    const pumpStatus = this.pump.readSync();
+    return pumpStatus;
+  }
 
-    if (doorStatus !== prevDoorStatus) {
-      if (doorStatus === this.OPEN) {
-        console.log("DOOR OPENED");
-        this.doorOpenTime = m();
-      } else if (doorStatus === this.CLOSED) {
-        console.log("DOOR CLOSED");
-        this.doorCloseTime = m();
+  getPumpTime() {
+    const str = this.lastPumpTime.format("hh:mm:ss a");
 
-        const start = this.doorOpenTime;
-        const end = this.doorCloseTime;
-        createEvent("door", "close", start, end);
-      } else {
-        console.error("Invalid door state");
-      }
+    return str;
+  }
 
-      this.doorStatus = doorStatus;
+  setPumpDuration(input) {
+    const seconds = parseInt(input, 10);
+    this.pumpDuration = seconds;
+  }
+
+  turnOn(timeout = 1000 * this.pumpDuration) {
+    this.pump.writeSync(this.ON);
+    this.lastPumpTime = m();
+    if (timeout !== 0) {
+      setTimeout(this.turnOff, timeout);
     }
+  }
+
+  turnOff(timeout = 0) {
+    console.log("Turn Pump Off");
+    this.pump.writeSync(this.OFF);
+  }
+
+  getStatus() {
+    const status = this.pump.readSync() === this.ON ? "ON" : "OFF";
+    const time = this.lastPumpTime;
+    const statusString = `Pump is: ${status}  - last run at: ${time}`;
+    return statusString;
   }
 
   getData() {
     const formatStr = "dddd, MMMM Do YYYY - h:mm:ss a";
-    const formatStr2 = "h:mm:ss a";
-    const { doorOpenTime, doorCloseTime, motionStopTime, doorStatus, OPEN } = this;
-    const motionDuration = m(motionStopTime).fromNow();
-    const doorStatusText = doorStatus === OPEN ? "OPEN" : "CLOSED";
-    const mostRecentDoorEvent = Math.max(doorCloseTime, doorOpenTime);
-    const doorDuration = m(mostRecentDoorEvent).fromNow();
+    const formatStr2 = "hh:mm:ss a";
+    const { lastPumpTime, ON, pumpDuration } = this;
+    const pumpStatus = this.pump.readSync();
+    const pumpStatusText = pumpStatus === ON ? "ON" : "OFF";
 
     return {
       currentTime: m().format(formatStr),
-      doorStatus: doorStatusText,
-      doorDuration,
-      motionDuration,
-      motionTime: m(motionStopTime).format(formatStr2),
-      doorTime: m(mostRecentDoorEvent).format(formatStr2),
-      intervalCount,
+      pumpStatus: pumpStatusText,
+      pumpDuration,
+      lastPumpTime: m(lastPumpTime).format(formatStr2),
     };
   }
 }

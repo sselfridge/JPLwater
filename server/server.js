@@ -11,27 +11,21 @@ const PumpController = require("./controllers/pumpController");
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, "../build")));
+// app.use(express.static(path.join(__dirname, "../build")));
 app.use(express.static(path.join(__dirname, "..", "public")));
 
 const CURRENT_ENV = process.env.NODE_ENV === "production" ? "production" : "dev";
 const piStartTime = m();
 const objIO = pi.setupIO();
 const Pump = new PumpController(objIO);
+let intervalCount = 0;
 
 // if (CURRENT_ENV === "dev") {
 const logInterval = setInterval(() => {
-  console.log(pi.ioStatus());
+  console.log(Pump.getStatus());
+  intervalCount++;
 }, 1000);
 // }
-
-//check interval for changing door / LED values
-intervalCount = 0;
-const interval = setInterval(() => {
-  const now = new Date();
-
-  const status = pi.heartbeat();
-}, 2000);
 
 const eventCheck = (CC) => {
   const { doorOpenTime, motionStopTime, motionStartTime } = CC;
@@ -65,13 +59,6 @@ const eventCheck = (CC) => {
   }
 };
 
-// app.get('/api/', (req, res) => {
-//   console.log('/api');
-//   const value = objIO.doorStatus.readSync();
-//   objIO.doorStatus.writeSync(value ^ 1);
-//   res.json('Allo!!!');
-// });
-
 app.post("/sms", (req, res) => {});
 // get current door status
 app.get("/door", (req, res) => {
@@ -79,113 +66,48 @@ app.get("/door", (req, res) => {
   res.json(roomInUse);
 });
 
-// change door status DEV only
-app.post("/door/:status", (req, res) => {
-  console.log(`/door/:status`);
-  const status = req.params.status;
-  let newValue;
-  if (status === "open") {
-    newValue = objIO.OPEN;
-  } else if (status === "close") {
-    newValue = objIO.CLOSED;
-  } else {
-    console.error(`Invalid door command. open / close is valid. Found: ${status}`);
-    res.status(400).send();
-  }
-  objIO.door.writeSync(newValue);
-  res.json("done");
+app.get("/pump/info", (req, res) => {
+  const currentStatus = Pump.checkPump();
+
+  const info = {
+    pumpTime: Pump.getPumpTime(),
+    pumpStatus: Pump.checkPump() === Pump.ON ? "ON" : "OFF",
+  };
+
+  res.send(info);
 });
 
-let moveTimeout;
-
-app.get("/led/:color", (req, res) => {
-  console.log(`/led/:color`);
-  const color = req.params.color;
-  console.log(`Color:${color}`);
-
-  let led;
-  if (color === "red") {
-    led = objIO.red;
-  } else if (color === "yellow") {
-    led = objIO.yellow;
-  } else if (color === "green") {
-    led = objIO.green;
-  } else {
-    console.log("Invalid color");
-    res.status(402).json(`Invalid color ${color}.  Valid colors: red,yellow,green`);
-    return;
+app.get("/pump/:state", (req, res) => {
+  console.log(`/pump/:state`);
+  const state = req.params.state.toLowerCase();
+  const newStatus = Pump.checkPump();
+  try {
+    if (state === "on") {
+      Pump.turnOn();
+    } else {
+      Pump.turnOff();
+    }
+  } catch (error) {
+    console.log("error: ", error);
   }
 
-  const newStatus = led.readSync() ^ 1;
-  led.writeSync(newStatus);
-  res.json(newStatus);
+  res.redirect("/");
 });
 
-// change color DEV only
-app.post("/led/:color", (req, res) => {
-  console.log(`/led/:color`);
-  const color = req.params.color;
-
-  let led;
-  if (color === "red") {
-    led = objIO.red;
-  } else if (color === "yellow") {
-    led = objIO.yellow;
-  } else if (color === "green") {
-    led = objIO.green;
-  } else {
-    console.log("Invalid color");
-    res.status(402).json(`Invalid color ${color}.  Valid colors: red,yellow,green`);
-    return;
-  }
-
-  const newStatus = led.readSync() ^ 1;
-  led.writeSync(newStatus);
-  res.json(newStatus);
+app.post("/pump/duration/:amount", (req, res) => {
+  const amount = req.params.amount;
+  Pump.setPumpDuration(amount);
+  res.send("Done");
 });
 
-// blink color DEV only
-// turns off after
-app.post("/led/blink/:color/:time", (req, res) => {
-  console.log(`/led/blink/:color/:time`);
-  const color = req.params.color;
-  const time = parseInt(req.params.time);
-  let led;
-  if (color === "red") {
-    led = objIO.red;
-  } else if (color === "yellow") {
-    led = objIO.yellow;
-  } else if (color === "green") {
-    led = objIO.green;
-  } else {
-    console.log("Invalid color");
-    res.status(402).json(`Invalid color ${color}.  Valid colors: red,yellow,green`);
-    return;
-  }
-  console.log(`Time: ${time}`);
-  if (Number.isInteger(time) && time > 0) {
-    pi.blinkLED(color, time);
-  } else {
-    console.log("Invalid color");
-    res.status(402).json(`Invalid time ${time}. Must be positive integer`);
-    return;
-  }
-
-  res.json("done");
-});
-
-//only need this to host the static files if we're running on the pi
-// for react, no need since currently just sending html
 app.get("/", function (req, res) {
-  // if (req.session) {
-  //   console.log(req.session);
-  // }
+  console.log("get /");
+
   try {
     const template = fs.readFileSync("build/index.html", "utf-8");
 
     let html = makeHtml(template);
 
-    // res.sendFile(html);
     res.send(html);
   } catch (error) {
     console.log(error);
@@ -210,11 +132,12 @@ app.use(({ errCode, error }, req, res, next) => {
 });
 
 const makeHtml = (template) => {
-  const data = CC.getData();
-  data.intervalCount = intervalCount;
-  data.startTime = piStartTime.format("MMMM Do YYYY, h:mm:ss a");
+  console.log("Make HTML");
+  const data = Pump.getData();
+  const timeFormat = "MMMM Do YYYY, h:mm:ss a";
+  data.startTime = piStartTime.format(timeFormat);
   data.startTimeFromNow = m(piStartTime).fromNow();
-
+  data.intervalCount = intervalCount;
   for (const key in data) {
     if (data.hasOwnProperty(key)) {
       const element = data[key];
@@ -222,6 +145,7 @@ const makeHtml = (template) => {
       template = template.replace(regex, element);
     }
   }
+
   return template;
 };
 
