@@ -21,7 +21,9 @@ class PumpController {
   }
 
   getPumpTime() {
-    const str = this.lastPumpTime.format("hh:mm:ss a");
+    const timeFormat = "MMMM Do YYYY, h:mm:ss a";
+
+    const str = this.lastPumpTime.format(timeFormat);
 
     return str;
   }
@@ -62,7 +64,7 @@ class PumpController {
       currentTime: m().format(formatStr),
       pumpStatus: pumpStatusText,
       pumpDuration,
-      lastPumpTime: m(lastPumpTime).format(formatStr2),
+      lastPumpTime: m(lastPumpTime).format(formatStr),
     };
   }
 }
