@@ -1,11 +1,15 @@
 // const axios = require("axios");
 
+const TIME_FORMAT = "MMMM Do YYYY, h:mm:ss a";
+const TIME_FORMAT_DAY = "dddd MMMM Do YYYY, h:mm:ss a";
+
 const getCurrentTime = () => {
-  return moment().format("dddd, MMMM Do YYYY - h:mm:ss a");
+  return moment().format(TIME_FORMAT_DAY);
 };
 
 const interval = setInterval(() => {
   const currentTime = getCurrentTime();
+  console.log("currentTime: ", currentTime);
   const currentTimeElement = document.getElementById("currentTime");
   currentTimeElement.innerText = currentTime;
 

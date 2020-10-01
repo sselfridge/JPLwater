@@ -1,5 +1,8 @@
 const m = require("moment");
 
+const TIME_FORMAT = "MMMM Do YYYY, h:mm:ss a";
+const TIME_FORMAT_DAY = "dddd MMMM Do YYYY, h:mm:ss a";
+
 class PumpController {
   constructor(objIO) {
     console.log("Initialize State");
@@ -21,9 +24,7 @@ class PumpController {
   }
 
   getPumpTime() {
-    const timeFormat = "MMMM Do YYYY, h:mm:ss a";
-
-    const str = this.lastPumpTime.format(timeFormat);
+    const str = this.lastPumpTime.format(TIME_FORMAT);
 
     return str;
   }
@@ -54,17 +55,16 @@ class PumpController {
   }
 
   getData() {
-    const formatStr = "dddd, MMMM Do YYYY - h:mm:ss a";
     const formatStr2 = "hh:mm:ss a";
     const { lastPumpTime, ON, pumpDuration } = this;
     const pumpStatus = this.pump.readSync();
     const pumpStatusText = pumpStatus === ON ? "ON" : "OFF";
 
     return {
-      currentTime: m().format(formatStr),
+      currentTime: m().format(TIME_FORMAT_DAY),
       pumpStatus: pumpStatusText,
       pumpDuration,
-      lastPumpTime: m(lastPumpTime).format(formatStr),
+      lastPumpTime: m(lastPumpTime).format(TIME_FORMAT),
     };
   }
 }
