@@ -36,7 +36,9 @@ const setPumpDuration = () => {
     .post(`/pump/duration/${value.value}`)
     .then(function (response) {
       // handle success
-      console.log(response);
+      pumpDuration = response.data;
+      const pumpDurationElm = document.getElementById("timeInput");
+      pumpDurationElm.value = pumpDuration;
     })
     .catch(function (error) {
       // handle error
@@ -46,5 +48,5 @@ const setPumpDuration = () => {
       // always executed
     });
 
-  location.reload("/");
+  // location.reload("/");
 };

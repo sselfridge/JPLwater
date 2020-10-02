@@ -68,10 +68,11 @@ app.get("/door", (req, res) => {
 
 app.get("/pump/info", (req, res) => {
   const currentStatus = Pump.checkPump();
-
+  const pumpDuration = Pump.getPumpDuration();
   const info = {
     pumpTime: Pump.getPumpTime(),
     pumpStatus: Pump.checkPump() === Pump.ON ? "ON" : "OFF",
+    pumpDuration,
   };
 
   res.send(info);
@@ -97,7 +98,7 @@ app.get("/pump/:state", (req, res) => {
 app.post("/pump/duration/:amount", (req, res) => {
   const amount = req.params.amount;
   Pump.setPumpDuration(amount);
-  res.send("Done");
+  res.send(amount);
 });
 
 app.get("/", function (req, res) {

@@ -25,8 +25,11 @@ class PumpController {
 
   getPumpTime() {
     const str = this.lastPumpTime.format(TIME_FORMAT);
-
     return str;
+  }
+
+  getPumpDuration() {
+    return this.pumpDuration;
   }
 
   setPumpDuration(input) {
@@ -63,7 +66,7 @@ class PumpController {
     return {
       currentTime: m().format(TIME_FORMAT_DAY),
       pumpStatus: pumpStatusText,
-      pumpDuration,
+      pumpDuration: pumpDuration,
       lastPumpTime: m(lastPumpTime).format(TIME_FORMAT),
     };
   }
